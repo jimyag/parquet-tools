@@ -12,11 +12,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/xitongsys/parquet-go/parquet"
-	"github.com/xitongsys/parquet-go/reader"
-	"github.com/xitongsys/parquet-go/types"
-
-	"github.com/hangxie/parquet-tools/internal"
+	"github.com/jimyag/go-parquet/parquet"
+	"github.com/jimyag/go-parquet/reader"
+	"github.com/jimyag/go-parquet/types"
+	"github.com/jimyag/parquet-tools/internal"
 )
 
 // CatCmd is a kong command for cat
@@ -113,7 +112,7 @@ func (c CatCmd) skipRows(fileReader *reader.ParquetReader) error {
 	// Do not abort if c.Skip is greater than total number of rows
 	// This gives users flexibility to handle this scenario by themselves
 
-	// use pagination to avoid excessive memory usage, see https://github.com/xitongsys/parquet-go/issues/545
+	// use pagination to avoid excessive memory usage, see https://github.com/jimyag/go-parquet/issues/545
 	rowsToSkip := c.Skip
 	for ; rowsToSkip > c.SkipPageSize; rowsToSkip -= c.SkipPageSize {
 		if err := fileReader.SkipRows(c.SkipPageSize); err != nil {
@@ -212,7 +211,7 @@ func rowToStruct(row interface{}, reinterpretFields map[string]internal.Reinterp
 	for k, v := range reinterpretFields {
 		// There are data types that are represented as string but they are actually not UTF8, they
 		// need to be re-interpreted so we will base64 encode them here to avoid losing data. For
-		// more details: https://github.com/xitongsys/parquet-go/issues/434
+		// more details: https://github.com/jimyag/go-parquet/issues/434
 		if v.ParquetType == parquet.Type_BYTE_ARRAY || v.ParquetType == parquet.Type_FIXED_LEN_BYTE_ARRAY || v.ParquetType == parquet.Type_INT96 {
 			encodeNestedBinaryString(tmp, strings.Split(k, ".")[1:], v)
 		}

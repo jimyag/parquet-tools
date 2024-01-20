@@ -3,7 +3,7 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/hangxie/parquet-tools/internal"
+	"github.com/jimyag/parquet-tools/internal"
 )
 
 // RowCountCmd is a kong command for rowcount

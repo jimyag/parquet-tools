@@ -11,7 +11,7 @@ echo ${VERSION} > ${BUILDDIR}/VERSION
 PREV_VERSION=$(git tag --sort=-committerdate | head -2 | tail -1)
 
 # changelog file
-echo "Changes since [${PREV_VERSION}](https://github.com/hangxie/parquet-tools/releases/tag/${PREV_VERSION}):" > ${BUILDDIR}/CHANGELOG
+echo "Changes since [${PREV_VERSION}](https://github.com/jimyag/parquet-tools/releases/tag/${PREV_VERSION}):" > ${BUILDDIR}/CHANGELOG
 echo >> ${BUILDDIR}/CHANGELOG
 git log --pretty=format:"* %h %s" ${VERSION}...${PREV_VERSION} >> ${BUILDDIR}/CHANGELOG
 echo >> ${BUILDDIR}/CHANGELOG

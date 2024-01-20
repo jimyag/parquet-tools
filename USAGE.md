@@ -63,7 +63,7 @@ You can choose one of the installation methods from below, the functionality wil
 Good for people who are familiar with [Go](https://golang.org/), you need 1.17 or newer version.
 
 ```bash
-$ go get github.com/hangxie/parquet-tools
+go get github.com/hangxie/parquet-tools
 ```
 
 it will install latest stable version of `parquet-tools` to $GOPATH/bin, if you do not set `GOPATH` environment variable explicitly, then its default value can be obtained by running `go env GOPATH`, usually it is `go/` directory under your home directory.
@@ -74,7 +74,7 @@ it will install latest stable version of `parquet-tools` to $GOPATH/bin, if you 
 
 Good for people do not want to build and all other installation approach do not work.
 
-Go to [release page](https://github.com/hangxie/parquet-tools/releases), pick the release and platform you want to run, download the corresponding gz/zip file, extract it to your local disk, make sure the execution bit is set if you are running on Linux or Mac, then run the program.
+Go to [release page](https://github.com/jimyag/parquet-tools/releases), pick the release and platform you want to run, download the corresponding gz/zip file, extract it to your local disk, make sure the execution bit is set if you are running on Linux or Mac, then run the program.
 
 For Windows 10 on ARM (like Surface Pro X), use either windows-arm64 or windows-386 build, if you are in Windows Insider program, windows-amd64 build should work too.
 
@@ -83,9 +83,9 @@ For Windows 10 on ARM (like Surface Pro X), use either windows-arm64 or windows-
 Mac user can use [Homebrew](https://brew.sh/) to install, it is not part of core formula yet but you can run:
 
 ```bash
-$ brew uninstall parquet-tools
-$ brew tap hangxie/tap
-$ brew install go-parquet-tools
+brew uninstall parquet-tools
+brew tap hangxie/tap
+brew install go-parquet-tools
 ```
 
 `parquet-tools` installed by brew is a similar tool built by Java, however, it is [deprecated](https://mvnrepository.com/artifact/org.apache.parquet/parquet-tools-deprecated), since both packages install same `parquet-tools` utility so you need to remove one before installing the other one.
@@ -93,15 +93,15 @@ $ brew install go-parquet-tools
 Whenever you want to upgrade to latest version which you should:
 
 ```bash
-$ brew upgrade go-parquet-tools
+brew upgrade go-parquet-tools
 ```
 
 ### Container Image
 
 Container image supports amd64, arm64, and arm/v7, it is hosted in two registries:
 
-* [Docker Hub](https://hub.docker.com/r/hangxie/parquet-tools)
-* [GitHub Packages](https://github.com/users/hangxie/packages/container/package/parquet-tools)
+- [Docker Hub](https://hub.docker.com/r/hangxie/parquet-tools)
+- [GitHub Packages](https://github.com/users/hangxie/packages/container/package/parquet-tools)
 
 You can pull the image from either location:
 
@@ -114,9 +114,9 @@ v1.20.0
 
 ### Prebuilt Packages
 
-RPM and deb package can be found on [release page](https://github.com/hangxie/parquet-tools/releases), only amd64/x86_64 and arm64/aarch64 arch are available at this moment, download the proper package and run corresponding installation command:
+RPM and deb package can be found on [release page](https://github.com/jimyag/parquet-tools/releases), only amd64/x86_64 and arm64/aarch64 arch are available at this moment, download the proper package and run corresponding installation command:
 
-* On Debian/Ubuntu:
+- On Debian/Ubuntu:
 
 ```bash
 $ sudo dpkg -i  parquet-tools_1.20.0_amd64.deb
@@ -125,7 +125,7 @@ Unpacking parquet-tools (1.20.0) ...
 Setting up parquet-tools (1.20.0) ...
 ```
 
-* On CentOS/Fedora:
+- On CentOS/Fedora:
 
 ```bash
 $ sudo rpm -Uhv parquet-tools-1.20.0-1.x86_64.rpm
@@ -138,6 +138,7 @@ Updating / installing...
 ## Usage
 
 ### Obtain Help
+
 `parquet-tools` provides help information through `-h` flag, whenever you are not sure about parameter for a command, just add `-h` to the end of the line then it will give you all available options, for example:
 
 ```bash
@@ -165,13 +166,15 @@ Most commands can output JSON format result which can be processed by utilities 
 ### Parquet File Location
 
 `parquet-tools` can read and write parquet files from these locations:
-* file system
-* AWS Simple Storage Service (S3) bucket
-* Google Cloud Storage (GCS) bucket
-* Azure Storage Container
+
+- file system
+- AWS Simple Storage Service (S3) bucket
+- Google Cloud Storage (GCS) bucket
+- Azure Storage Container
 
 `parquet-tools` can read parquet files from these locations:
-* HTTP/HTTPS URL
+
+- HTTP/HTTPS URL
 
 you need to have proper permission on the file you are going to process.
 
@@ -224,7 +227,7 @@ $ parquet-tools row-count s3://aws-roda-hcls-datalake/gnomad/chrm/run-DataSink0-
 parquet-tools: error: failed to open S3 object [s3://aws-roda-hcls-datalake/gnomad/chrm/run-DataSink0-1-part-block-0-r-00000-snappy.parquet] version [non-existent-version]: operation error S3: HeadObject, https response error StatusCode: 403, RequestID: REDACTED, HostID: REDACTED, api error Forbidden: Forbidden
 ```
 
-> According to [HeadObject](https://docs.aws.amazon.com/AmazonS3/latest/API/API_HeadObject.html) and [GetObject](https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetObject.html), status code for non-existent object or version will be 403 instead of 404 if the caller does not have permission to `ListBucket`. 
+> According to [HeadObject](https://docs.aws.amazon.com/AmazonS3/latest/API/API_HeadObject.html) and [GetObject](https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetObject.html), status code for non-existent object or version will be 403 instead of 404 if the caller does not have permission to `ListBucket`.
 
 Thanks to [parquet-go-source](https://github.com/xitongsys/parquet-go-source), `parquet-tools` loads only necessary data from S3 bucket, for most cases it is footer only, so it is much more faster than downloading the file from S3 bucket and run `parquet-tools` on a local file. Size of the S3 object used in above sample is more than 4GB, but the `row-count` command takes just several seconds to finish.
 
@@ -244,19 +247,21 @@ Similar to S3, `parquet-tools` downloads only necessary data from GCS bucket.
 #### Azure Storage Container
 
 `parquet-tools` uses the [HDFS URL format](https://docs.microsoft.com/en-us/azure/hdinsight/hdinsight-hadoop-use-blob-storage#access-files-from-within-cluster):
-* starts with `wasbs://` (`wasb://` is not supported), followed by
-* container as user name, followed by
-* storage account as host, followed by
-* blob name as path
+
+- starts with `wasbs://` (`wasb://` is not supported), followed by
+- container as user name, followed by
+- storage account as host, followed by
+- blob name as path
 
 for example:
 
 > wasbs://laborstatisticscontainer@azureopendatastorage.blob.core.windows.net/lfs/part-00000-tid-6312913918496818658-3a88e4f5-ebeb-4691-bfb6-e7bd5d4f2dd0-63558-c000.snappy.parquet
 
 means the parquet file is at:
-* storage account `azureopendatastorage`
-* container `laborstatisticscontainer`
-* blob `lfs/part-00000-tid-6312913918496818658-3a88e4f5-ebeb-4691-bfb6-e7bd5d4f2dd0-63558-c000.snappy.parquet`
+
+- storage account `azureopendatastorage`
+- container `laborstatisticscontainer`
+- blob `lfs/part-00000-tid-6312913918496818658-3a88e4f5-ebeb-4691-bfb6-e7bd5d4f2dd0-63558-c000.snappy.parquet`
 
 `parquet-tools` uses `AZURE_STORAGE_ACCESS_KEY` environment varialbe to identity access:
 
@@ -284,9 +289,10 @@ Similar to S3 and GCS, `parquet-tools` downloads only necessary data from blob.
 HTTP endpoint does not support write operation so it cannot be used as destination of `import` command.
 
 These options can be used along with HTTP endpoints:
-* `--http-multiple-connection` will enable dedicated transport for concurrent requests, `parquet-tools` will establish multiple TCP connections to remote server. This may or may not have performance impact depends on how remote server handles concurrent connections, it is recommended to leave it to default `false` value for all commands except `cat`, and test performance carefully with `cat` command.
-* `--http-extra-headers` in the format of `key1=value1,key2=value2,...`, they will be used as extra HTTP headers, a use case is to use them for authentication/authorization that is required by remote server.
-* `--http-ignore-tls-error` will ignore TLS errors.
+
+- `--http-multiple-connection` will enable dedicated transport for concurrent requests, `parquet-tools` will establish multiple TCP connections to remote server. This may or may not have performance impact depends on how remote server handles concurrent connections, it is recommended to leave it to default `false` value for all commands except `cat`, and test performance carefully with `cat` command.
+- `--http-extra-headers` in the format of `key1=value1,key2=value2,...`, they will be used as extra HTTP headers, a use case is to use them for authentication/authorization that is required by remote server.
+- `--http-ignore-tls-error` will ignore TLS errors.
 
 ```bash
 $ parquet-tools row-count https://azureopendatastorage.blob.core.windows.net/laborstatisticscontainer/lfs/part-00000-tid-6312913918496818658-3a88e4f5-ebeb-4691-bfb6-e7bd5d4f2dd0-63558-c000.snappy.parquet
@@ -337,8 +343,8 @@ Similar to cloud storage, `parquet-tools` downloads only necessary data from HDF
 
 There are two parameters that you probably will never touch:
 
-* `--read-page-size` tells how many rows `parquet-tools` needs to read from the parquet file every time, you can play with it if you hit performance or resource problem.
-* `--skip-page-size` tells how many rows `parquet-tools` need to skip at a time if `--skip` is specified, you can play with it if you hit memory issue, read https://github.com/xitongsys/parquet-go/issues/545 for more details.
+- `--read-page-size` tells how many rows `parquet-tools` needs to read from the parquet file every time, you can play with it if you hit performance or resource problem.
+- `--skip-page-size` tells how many rows `parquet-tools` need to skip at a time if `--skip` is specified, you can play with it if you hit memory issue, read <https://github.com/jimyag/go-parquet/issues/545> for more details.
 
 #### Full Data Set
 
@@ -445,6 +451,7 @@ $ parquet-tools cat --skip 2 --limit 1 testdata/good.parquet
 ```
 
 #### Output Format
+
 `cat` supports two output formats, one is the default JSON format that wraps all JSON objects into an array, this works perfectly with small output and is compatible with most JSON toolchains, however, since almost all JSON libraries load full JSON into memory to parse and process, this will lead to memory pressure if you dump a huge amount of data.
 
 ```bash
@@ -473,11 +480,11 @@ The command takes 3 parameters, `--source` tells which file (file system only) t
 
 Each source data file format has its own dedicated schema format:
 
-* CSV: you can refer to [sample in this repo](https://github.com/hangxie/parquet-tools/blob/main/testdata/csv.schema).
-* JSON: you can refer to [sample in this repo](https://github.com/hangxie/parquet-tools/blob/main/testdata/json.schema).
-* JSONL: use same schema as JSON format.
+- CSV: you can refer to [sample in this repo](https://github.com/jimyag/parquet-tools/blob/main/testdata/csv.schema).
+- JSON: you can refer to [sample in this repo](https://github.com/jimyag/parquet-tools/blob/main/testdata/json.schema).
+- JSONL: use same schema as JSON format.
 
-You cannot import INT96 data at this moment, more details can be found at https://github.com/hangxie/parquet-tools/issues/149. 
+You cannot import INT96 data at this moment, more details can be found at <https://github.com/jimyag/parquet-tools/issues/149>.
 
 #### Import from CSV
 
@@ -546,7 +553,7 @@ $ parquet-tools row-count testdata/good.parquet
 
 #### JSON Format
 
-JSON format schema can be used directly in parquet-go based golang program like [this example](https://github.com/xitongsys/parquet-go/blob/master/example/json_schema.go):
+JSON format schema can be used directly in parquet-go based golang program like [this example](https://github.com/jimyag/go-parquet/blob/master/example/json_schema.go):
 
 ```bash
 $ parquet-tools schema testdata/good.parquet
@@ -569,8 +576,8 @@ go struct format generate go struct definition snippet that can be used in go:
 ```bash
 $ parquet-tools schema --format go testdata/good.parquet | gofmt
 type Parquet_go_root struct {
-	Shoe_brand string `parquet:"name=Shoe_brand, type=BYTE_ARRAY, convertedtype=UTF8"`
-	Shoe_name  string `parquet:"name=Shoe_name, type=BYTE_ARRAY, convertedtype=UTF8"`
+ Shoe_brand string `parquet:"name=Shoe_brand, type=BYTE_ARRAY, convertedtype=UTF8"`
+ Shoe_name  string `parquet:"name=Shoe_name, type=BYTE_ARRAY, convertedtype=UTF8"`
 }
 ```
 
@@ -596,7 +603,7 @@ $ parquet-tools schema testdata/map-composite-value.parquet
 To install shell completions. run:
 
 ```bash
-$ parquet-tools shell-completions
+parquet-tools shell-completions
 ```
 
 You will not get output if everything runs well, you can check shell's rcfile, for example, `.bash_profile` or `.bashrc` for bash, to see what it added.
@@ -608,7 +615,7 @@ This command will return error if the same line is in shell's rcfile already.
 To uninstall shell completions, run:
 
 ```bash
-$ parquet-tools shell-completions --uninstall
+parquet-tools shell-completions --uninstall
 ```
 
 You will not get output if everything runs well, you can check shell's rcfile, for example, `.bash_profile` or `.bashrc` for bash, to see what it removed.

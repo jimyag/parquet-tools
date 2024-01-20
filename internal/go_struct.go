@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/xitongsys/parquet-go/parquet"
+	"github.com/jimyag/go-parquet/parquet"
 )
 
 type GoStructNode struct {

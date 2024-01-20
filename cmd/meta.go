@@ -8,10 +8,10 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/xitongsys/parquet-go/parquet"
-	"github.com/xitongsys/parquet-go/types"
+	"github.com/jimyag/go-parquet/parquet"
+	"github.com/jimyag/go-parquet/types"
 
-	"github.com/hangxie/parquet-tools/internal"
+	"github.com/jimyag/parquet-tools/internal"
 )
 
 // MetaCmd is a kong command for meta

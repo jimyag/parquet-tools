@@ -3,9 +3,9 @@ package main
 import (
 	"fmt"
 
-	"github.com/xitongsys/parquet-go-source/local"
-	"github.com/xitongsys/parquet-go/parquet"
-	"github.com/xitongsys/parquet-go/writer"
+	"github.com/jimyag/go-parquet/parquet"
+	"github.com/jimyag/go-parquet/source/local"
+	"github.com/jimyag/go-parquet/writer"
 )
 
 type AllTypes struct {

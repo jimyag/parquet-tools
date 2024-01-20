@@ -7,7 +7,7 @@ import (
 	"github.com/posener/complete"
 	"github.com/willabides/kongplete"
 
-	"github.com/hangxie/parquet-tools/cmd"
+	"github.com/jimyag/parquet-tools/cmd"
 )
 
 var cli struct {
@@ -26,7 +26,7 @@ func main() {
 		&cli,
 		kong.UsageOnError(),
 		kong.ConfigureHelp(kong.HelpOptions{Compact: true}),
-		kong.Description("Utility inspect Parquet files, for full usage see https://github.com/hangxie/parquet-tools/blob/main/USAGE.md"),
+		kong.Description("Utility inspect Parquet files, for full usage see https://github.com/jimyag/parquet-tools/blob/main/USAGE.md"),
 	)
 	kongplete.Complete(parser, kongplete.WithPredictor("file", complete.PredictFiles("*")))
 

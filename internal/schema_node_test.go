@@ -6,9 +6,9 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/jimyag/go-parquet/parquet"
+	"github.com/jimyag/go-parquet/types"
 	"github.com/stretchr/testify/require"
-	"github.com/xitongsys/parquet-go/parquet"
-	"github.com/xitongsys/parquet-go/types"
 )
 
 func Test_NewSchemaTree(t *testing.T) {

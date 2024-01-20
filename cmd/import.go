@@ -9,7 +9,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/hangxie/parquet-tools/internal"
+	"github.com/jimyag/parquet-tools/internal"
 )
 
 // ImportCmd is a kong command for import

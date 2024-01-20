@@ -4,4 +4,4 @@ Section: development
 Priority: optional
 Architecture: CHANGEME
 Maintainer: 7977860+hangxie@users.noreply.github.com
-Description: Utility to deal with Parquet data, for change log visit https://github.com/hangxie/parquet-tools/releases
+Description: Utility to deal with Parquet data, for change log visit https://github.com/jimyag/parquet-tools/releases

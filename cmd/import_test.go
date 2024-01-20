@@ -6,7 +6,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/hangxie/parquet-tools/internal"
+	"github.com/jimyag/parquet-tools/internal"
 )
 
 func Test_ImportCmd_Run_CSV_good(t *testing.T) {
