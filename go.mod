@@ -8,7 +8,7 @@ require (
 	github.com/aws/aws-sdk-go-v2 v1.24.1
 	github.com/aws/aws-sdk-go-v2/config v1.26.5
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.48.0
-	github.com/jimyag/go-parquet v0.0.0-20240120190427-247130a05f7b
+	github.com/jimyag/go-parquet v0.0.0-20240121145505-b462e1338fb9
 	github.com/posener/complete v1.2.3
 	github.com/stretchr/testify v1.8.4
 	github.com/willabides/kongplete v0.4.0
