@@ -63,7 +63,7 @@ You can choose one of the installation methods from below, the functionality wil
 Good for people who are familiar with [Go](https://golang.org/), you need 1.17 or newer version.
 
 ```bash
-go get github.com/hangxie/parquet-tools
+go install github.com/jimyag/parquet-tools
 ```
 
 it will install latest stable version of `parquet-tools` to $GOPATH/bin, if you do not set `GOPATH` environment variable explicitly, then its default value can be obtained by running `go env GOPATH`, usually it is `go/` directory under your home directory.

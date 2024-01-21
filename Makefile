@@ -3,7 +3,7 @@
 # Required for globs to work correctly
 SHELL:=/bin/bash
 
-PKG_PREFIX  = github.com/hangxie/parquet-tools
+PKG_PREFIX  = github.com/jimyag/parquet-tools
 VERSION     = $(shell git describe --tags)
 GIT_HASH    = $(shell git rev-parse --short HEAD)
 BUILD       = $(shell date +%FT%T%z)
@@ -68,6 +68,12 @@ build: deps  ## Build locally for local os/arch creating $(BUILDDIR) in ./
 	@mkdir -p $(BUILDDIR)
 	@CGO_ENABLED=$(CGO_ENABLED) \
 		$(GO) build $(GOFLAGS) -tags '$(TAGS)' -ldflags '$(LDFLAGS)' -o $(BUILDDIR) ./
+
+
+linux-amd64: ## Build for linux/amd64
+	@echo "==> Building linux-amd64"
+	@CGO_ENABLED=$(CGO_ENABLED) \
+		GOOS=linux GOARCH=amd64  $(GO) build $(GOFLAGS) -tags '$(TAGS)' -ldflags '$(LDFLAGS)' -o $(BUILDDIR) ./
 
 clean:  ## Clean up the build dirs
 	@echo "==> Cleaning up build dirs"
