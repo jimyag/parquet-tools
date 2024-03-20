@@ -10,7 +10,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.52.1
 	github.com/jimyag/go-parquet v0.0.0-20240121145505-b462e1338fb9
 	github.com/posener/complete v1.2.3
-	github.com/stretchr/testify v1.8.4
+	github.com/stretchr/testify v1.9.0
 	github.com/willabides/kongplete v0.4.0
 )
 
