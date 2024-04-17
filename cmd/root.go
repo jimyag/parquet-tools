@@ -4,26 +4,47 @@ Copyright © 2024 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
+	"context"
 	"fmt"
+	"net/url"
 	"os"
 
 	"github.com/apache/arrow/go/v16/parquet/file"
 	"github.com/apache/arrow/go/v16/parquet/metadata"
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/credentials"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/jimyag/log"
 	"github.com/spf13/cobra"
+
+	"github.com/jimyag/parquet-tools/internal"
 )
 
-// rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "parquet-tools",
-	Short: "A brief description of your application",
-	Long:  ``,
+	Short: "Utility to inspect Parquet files",
 	Run:   func(cmd *cobra.Command, args []string) {},
 }
-var filename string
+
+var (
+	filename       string
+	region         string
+	access_key     string
+	secret_key     string
+	end_point      string
+	disableSSL     bool
+	forcePathStyle bool
+)
 
 func init() {
 	rootCmd.PersistentFlags().StringVarP(&filename, "filename", "f", "", "filename")
+	rootCmd.PersistentFlags().StringVarP(&region, "region", "r", "", "s3 region")
+	rootCmd.PersistentFlags().StringVarP(&access_key, "ak", "", "", "s3 access_key")
+	rootCmd.PersistentFlags().StringVarP(&secret_key, "sk", "", "", "s3 secret_key")
+	rootCmd.PersistentFlags().StringVarP(&end_point, "ep", "", "", "s3 end_point")
+	rootCmd.PersistentFlags().BoolVarP(&disableSSL, "ds", "", false, "s3 disable_ssl")
+	rootCmd.PersistentFlags().BoolVarP(&forcePathStyle, "fp", "", true, "s3 force_path_style")
 	_ = rootCmd.MarkPersistentFlagRequired("filename")
 }
 
@@ -34,12 +55,50 @@ func Execute() {
 	}
 }
 
+const (
+	s3Scheme    = "s3"
+	s3aScheme   = "s3a"
+	localScheme = "file"
+)
+
 func getReader() *file.Reader {
-	rdr, err := file.OpenParquetFile(filename, false)
+	u, err := url.Parse(filename)
 	if err != nil {
-		log.Panic(err).Msg("error opening parquet file")
+		log.Panic(err).
+			Str("filename", filename).
+			Msg("error parsing filename")
 	}
-	return rdr
+	if u.Scheme == "" || u.Scheme == localScheme {
+		rdr, err := file.OpenParquetFile(filename, false)
+		if err != nil {
+			log.Panic(err).Msg("error opening parquet file")
+		}
+		return rdr
+	}
+	if u.Scheme == s3Scheme || u.Scheme == s3aScheme {
+		if end_point == "" {
+			log.Panic().Msg("end_point is required for s3 scheme")
+		}
+		mySession := session.Must(session.NewSession(&aws.Config{
+			Credentials:      credentials.NewStaticCredentials(access_key, secret_key, ""),
+			Endpoint:         aws.String(end_point),
+			Region:           aws.String(region),
+			DisableSSL:       aws.Bool(disableSSL),
+			S3ForcePathStyle: aws.Bool(forcePathStyle),
+		}))
+		s3Cli := s3.New(mySession)
+		s3Reader, err := internal.NewS3Reader(context.Background(), filename, s3Cli)
+		if err != nil {
+			log.Panic(err).Msg("error creating s3 reader")
+		}
+		rdr, err := file.NewParquetReader(s3Reader)
+		if err != nil {
+			log.Panic(err).Msg("error creating parquet reader")
+		}
+		return rdr
+	}
+	log.Panic().Msg("unsupported scheme")
+	return nil
 }
 
 func read() {

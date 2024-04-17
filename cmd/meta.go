@@ -16,8 +16,7 @@ import (
 // metaCmd represents the meta command
 var metaCmd = &cobra.Command{
 	Use:   "meta",
-	Short: "",
-	Long:  ``,
+	Short: "print a Parquet file's metadata",
 	Run:   meta,
 }
 
@@ -37,14 +36,14 @@ func meta(cmd *cobra.Command, args []string) {
 	t.AppendRow(table.Row{"version", fileMetadata.Version()})
 	t.AppendRow(table.Row{"created by", fileMetadata.GetCreatedBy()})
 	t.AppendRow(table.Row{"num rows", rdr.NumRows()})
-	keyvaluemeta := fileMetadata.KeyValueMetadata()
-	if keyvaluemeta != nil {
-		if keyvaluemeta.Len() > 0 {
-			t.AppendRow(table.Row{"key value file metadata", keyvaluemeta.Len()})
+	kvMeta := fileMetadata.KeyValueMetadata()
+	if kvMeta != nil {
+		if kvMeta.Len() > 0 {
+			t.AppendRow(table.Row{"key value file metadata", kvMeta.Len()})
 		}
-		keys := keyvaluemeta.Keys()
-		values := keyvaluemeta.Values()
-		for i := 0; i < keyvaluemeta.Len(); i++ {
+		keys := kvMeta.Keys()
+		values := kvMeta.Values()
+		for i := 0; i < kvMeta.Len(); i++ {
 			t.AppendRow(table.Row{keys[i], values[i]})
 		}
 		t.AppendRow(table.Row{"number of row groups", rdr.NumRowGroups()})

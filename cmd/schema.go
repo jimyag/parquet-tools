@@ -1,25 +1,24 @@
 package cmd
 
 import (
-	"fmt"
+	"os"
 
+	"github.com/apache/arrow/go/v16/parquet/schema"
 	"github.com/spf13/cobra"
 )
 
 // metaCmd represents the meta command
 var schemaCmd = &cobra.Command{
 	Use:   "schema",
-	Short: "",
-	Long:  ``,
-	Run:   schema,
+	Short: "print the Avro schema for a file",
+	Run:   schemaRun,
 }
 
 func init() {
 	rootCmd.AddCommand(schemaCmd)
 }
 
-func schema(cmd *cobra.Command, args []string) {
+func schemaRun(cmd *cobra.Command, args []string) {
 	rdr := getReader()
-	fileMetadata := rdr.MetaData()
-	fmt.Println(fileMetadata.Schema.String())
+	schema.PrintSchema(rdr.MetaData().Schema.Root(), os.Stdout, 2)
 }

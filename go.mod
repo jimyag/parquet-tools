@@ -4,6 +4,7 @@ go 1.22
 
 require (
 	github.com/apache/arrow/go/v16 v16.0.0-20240411024801-7f64fff61e9b
+	github.com/aws/aws-sdk-go v1.51.22
 	github.com/jedib0t/go-pretty/v6 v6.5.8
 	github.com/jimyag/log v0.1.1
 	github.com/spf13/cobra v1.8.0
@@ -17,6 +18,7 @@ require (
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/google/flatbuffers v24.3.25+incompatible // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
+	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/klauspost/asmfmt v1.3.2 // indirect
 	github.com/klauspost/compress v1.17.7 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.7 // indirect
