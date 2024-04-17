@@ -3,7 +3,14 @@
 
 Utility to pretty inspect Parquet files.
 
-Supported reading from: http, https, local file, s3, s3a
+Supported reading from: http/https URL, local file, s3/s3a URL
+
+## Features
+
+- cat: Print the first N records from a file
+- footer: Print the Parquet file footer in json format
+- meta: Pretty Print a Parquet file's metadata
+- schema: Pretty print the Avro schema for a file
 
 ## Install
 
@@ -243,9 +250,3 @@ required group field_id=-1 schema {
   optional int64 field_id=-1 __index_level_0__;
 }
 ```
-
-## Features
-
-- Print the Parquet file footer in json format
-- Pretty Print a Parquet file's metadata
-- Pretty print the Avro schema for a file

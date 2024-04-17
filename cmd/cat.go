@@ -12,7 +12,7 @@ import (
 
 var catCmd = &cobra.Command{
 	Use:   "cat",
-	Short: "print a Parquet file in json format",
+	Short: "print the first N records from a file",
 	Run:   catRun,
 }
 
