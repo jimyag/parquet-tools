@@ -32,6 +32,12 @@ func meta(cmd *cobra.Command, args []string) {
 	t.Style().Options.SeparateRows = true
 	tTemp := table.Table{}
 	tTemp.Render()
+	t.SetColumnConfigs([]table.ColumnConfig{
+		{Name: "key", WidthMax: 0, Align: text.AlignCenter},
+		{Name: "value", WidthMax: 40, Align: text.AlignCenter},
+	})
+	t.AppendHeader(table.Row{"key", "value"}, table.RowConfig{AutoMergeAlign: text.AlignCenter})
+
 	t.AppendRow(table.Row{"filename", filename})
 	t.AppendRow(table.Row{"version", fileMetadata.Version()})
 	t.AppendRow(table.Row{"created by", fileMetadata.GetCreatedBy()})

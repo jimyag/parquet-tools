@@ -3,6 +3,7 @@ module github.com/jimyag/parquet-tools
 go 1.22
 
 require (
+	github.com/BurntSushi/toml v1.3.2
 	github.com/apache/arrow/go/v16 v16.0.0-20240411024801-7f64fff61e9b
 	github.com/aws/aws-sdk-go v1.51.22
 	github.com/jedib0t/go-pretty/v6 v6.5.8
