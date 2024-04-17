@@ -1,6 +1,7 @@
 on:
-  release:
-    types: [created]
+  push:
+    tags:
+      - v*
 
 jobs:
   releases-matrix:
@@ -48,7 +49,7 @@ jobs:
       - name: Show environment
         run: export
       - uses: actions/checkout@v2
-      - uses: wangyoucao577/go-release-action@latest
+      - uses: wangyoucao577/go-release-action@master
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           goos: ${{ matrix.goos }}
