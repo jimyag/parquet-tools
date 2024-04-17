@@ -10,11 +10,11 @@ import (
 var schemaCmd = &cobra.Command{
 	Use:   "schema",
 	Short: "print the Avro schema for a file",
-	Run:   catRun,
+	Run:   schemaRun,
 }
 
 func init() {
-	rootCmd.AddCommand(catCmd)
+	rootCmd.AddCommand(schemaCmd)
 }
 
 func schemaRun(cmd *cobra.Command, args []string) {

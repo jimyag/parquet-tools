@@ -3,7 +3,6 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
-	"os"
 
 	"github.com/jimyag/log"
 	"github.com/spf13/cobra"
@@ -17,16 +16,21 @@ var catCmd = &cobra.Command{
 	Run:   catRun,
 }
 
-var parseInt96AsTime bool
+var convertInt96AsTime bool
+var count int64
 
 func init() {
+	catCmd.PersistentFlags().BoolVarP(&convertInt96AsTime, "convert", "", false, "convert int96 as time,false print as int96")
+	catCmd.PersistentFlags().Int64VarP(&count, "count", "n", 0, "print count rows")
 	rootCmd.AddCommand(catCmd)
-	catCmd.PersistentFlags().BoolVarP(&parseInt96AsTime, "parse-int96-as-timestamp", "", false, "parse int96 as time,false print as int96")
 }
 
 func catRun(cmd *cobra.Command, args []string) {
 	rdr := getReader()
-	dataOut := os.Stdout
+	if count == 0 {
+		count = rdr.MetaData().NumRows + 1
+	}
+	var printNum int64
 	for r := 0; r < rdr.NumRowGroups(); r++ {
 		rgr := rdr.RowGroup(r)
 		scanners := make([]*dumper.Dumper, rdr.MetaData().Schema.NumColumns())
@@ -36,11 +40,15 @@ func catRun(cmd *cobra.Command, args []string) {
 			if err != nil {
 				log.Panic(err).Int("column", c).Msg("error getting column")
 			}
-			scanners[c] = dumper.NewDumper(col, parseInt96AsTime)
+			scanners[c] = dumper.NewDumper(col, convertInt96AsTime)
 			fields[c] = col.Descriptor().Path()
 		}
 		var line string
 		for {
+			// printNum is used to limit the number of rows
+			if printNum >= count {
+				return
+			}
 			if line == "" {
 				line = "{"
 			} else {
@@ -52,14 +60,14 @@ func catRun(cmd *cobra.Command, args []string) {
 			for idx, s := range scanners {
 				if val, ok := s.Next(); ok {
 					if !data {
-						fmt.Fprint(dataOut, line)
+						fmt.Print(line)
 					}
 					data = true
 					if val == nil {
 						continue
 					}
 					if !first {
-						fmt.Fprint(dataOut, ",")
+						fmt.Print(",")
 					}
 					first = false
 					switch val.(type) {
@@ -73,14 +81,15 @@ func catRun(cmd *cobra.Command, args []string) {
 							Str("val", fmt.Sprintf("%+v", val)).
 							Msg("error marshalling json")
 					}
-					fmt.Fprintf(dataOut, "%q: %s", fields[idx], jsonVal)
+					fmt.Printf("%q: %s", fields[idx], jsonVal)
 				}
 			}
 			if !data {
 				break
 			}
-			fmt.Fprint(dataOut, "}")
+			fmt.Print("}")
+			printNum++
 		}
-		fmt.Fprintln(dataOut)
+		fmt.Println()
 	}
 }
