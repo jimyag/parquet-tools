@@ -7,15 +7,14 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// metaCmd represents the meta command
 var schemaCmd = &cobra.Command{
 	Use:   "schema",
 	Short: "print the Avro schema for a file",
-	Run:   schemaRun,
+	Run:   catRun,
 }
 
 func init() {
-	rootCmd.AddCommand(schemaCmd)
+	rootCmd.AddCommand(catCmd)
 }
 
 func schemaRun(cmd *cobra.Command, args []string) {

@@ -1,10 +1,9 @@
-package main
+package dumper
 
 import (
 	"encoding/binary"
 	"fmt"
 	"reflect"
-	"time"
 
 	"github.com/apache/arrow/go/v16/parquet"
 	"github.com/apache/arrow/go/v16/parquet/file"
@@ -24,10 +23,11 @@ type Dumper struct {
 	defLevels      []int16
 	repLevels      []int16
 
-	valueBuffer interface{}
+	valueBuffer      interface{}
+	parseInt96AsTime bool
 }
 
-func createDumper(reader file.ColumnChunkReader) *Dumper {
+func NewDumper(reader file.ColumnChunkReader, parseInt96AsTime bool) *Dumper {
 	batchSize := defaultBatchSize
 
 	var valueBuffer interface{}
@@ -51,11 +51,12 @@ func createDumper(reader file.ColumnChunkReader) *Dumper {
 	}
 
 	return &Dumper{
-		reader:      reader,
-		batchSize:   int64(batchSize),
-		defLevels:   make([]int16, batchSize),
-		repLevels:   make([]int16, batchSize),
-		valueBuffer: valueBuffer,
+		reader:           reader,
+		batchSize:        int64(batchSize),
+		defLevels:        make([]int16, batchSize),
+		repLevels:        make([]int16, batchSize),
+		valueBuffer:      valueBuffer,
+		parseInt96AsTime: parseInt96AsTime,
 	}
 }
 
@@ -97,45 +98,40 @@ func (dump *Dumper) hasNext() bool {
 
 const microSecondsPerDay = 24 * 3600e6
 
-var parseInt96AsTimestamp = false
-
 func (dump *Dumper) FormatValue(val interface{}, width int) string {
-	fmtstring := fmt.Sprintf("-%d", width)
+	fmtStr := fmt.Sprintf("-%d", width)
 	switch val := val.(type) {
 	case nil:
-		return fmt.Sprintf("%"+fmtstring+"s", "NULL")
+		return fmt.Sprintf("%"+fmtStr+"s", "NULL")
 	case bool:
-		return fmt.Sprintf("%"+fmtstring+"t", val)
+		return fmt.Sprintf("%"+fmtStr+"t", val)
 	case int32:
-		return fmt.Sprintf("%"+fmtstring+"d", val)
+		return fmt.Sprintf("%"+fmtStr+"d", val)
 	case int64:
-		return fmt.Sprintf("%"+fmtstring+"d", val)
+		return fmt.Sprintf("%"+fmtStr+"d", val)
 	case float32:
-		return fmt.Sprintf("%"+fmtstring+"f", val)
+		return fmt.Sprintf("%"+fmtStr+"f", val)
 	case float64:
-		return fmt.Sprintf("%"+fmtstring+"f", val)
+		return fmt.Sprintf("%"+fmtStr+"f", val)
 	case parquet.Int96:
-		if parseInt96AsTimestamp {
-			usec := int64(binary.LittleEndian.Uint64(val[:8])/1000) +
-				(int64(binary.LittleEndian.Uint32(val[8:]))-2440588)*microSecondsPerDay
-			t := time.Unix(usec/1e6, (usec%1e6)*1e3).UTC()
-			return fmt.Sprintf("%"+fmtstring+"s", t)
+		if dump.parseInt96AsTime {
+			return fmt.Sprintf("%"+fmtStr+"s", val.String())
 		} else {
-			return fmt.Sprintf("%"+fmtstring+"s",
-				fmt.Sprintf("%d %d %d",
+			return fmt.Sprintf("%"+fmtStr+"s",
+				fmt.Sprintf("%d%d%d",
 					binary.LittleEndian.Uint32(val[:4]),
 					binary.LittleEndian.Uint32(val[4:]),
 					binary.LittleEndian.Uint32(val[8:])))
 		}
 	case parquet.ByteArray:
 		if dump.reader.Descriptor().ConvertedType() == schema.ConvertedTypes.UTF8 {
-			return fmt.Sprintf("%"+fmtstring+"s", string(val))
+			return fmt.Sprintf("%"+fmtStr+"s", string(val))
 		}
-		return fmt.Sprintf("% "+fmtstring+"X", val)
+		return fmt.Sprintf("% "+fmtStr+"X", val)
 	case parquet.FixedLenByteArray:
-		return fmt.Sprintf("% "+fmtstring+"X", val)
+		return fmt.Sprintf("% "+fmtStr+"X", val)
 	default:
-		return fmt.Sprintf("%"+fmtstring+"s", fmt.Sprintf("%v", val))
+		return fmt.Sprintf("%"+fmtStr+"s", fmt.Sprintf("%v", val))
 	}
 }
 
@@ -151,7 +147,6 @@ func (dump *Dumper) Next() (interface{}, bool) {
 	}
 
 	defLevel := dump.defLevels[int(dump.levelOffset)]
-	// repLevel := dump.repLevels[int(dump.levelOffset)]
 	dump.levelOffset++
 
 	if defLevel < dump.reader.Descriptor().MaxDefinitionLevel() {
