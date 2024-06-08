@@ -15,7 +15,7 @@ Supported reading from: http/https URL, local file, s3/s3a URL
 ## Install
 
 ``` bash
-go get github.com/jimyag/parquet-tools@latest
+go install github.com/jimyag/parquet-tools@latest
 ```
 
 ## Usage
