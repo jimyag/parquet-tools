@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/apache/arrow/go/v16/parquet"
-	"github.com/apache/arrow/go/v16/parquet/file"
-	"github.com/apache/arrow/go/v16/parquet/schema"
+	"github.com/apache/arrow/go/v17/parquet"
+	"github.com/apache/arrow/go/v17/parquet/file"
+	"github.com/apache/arrow/go/v17/parquet/schema"
 )
 
 const defaultBatchSize = 128
@@ -95,8 +95,6 @@ func (dump *Dumper) readNextBatch() {
 func (dump *Dumper) hasNext() bool {
 	return dump.levelOffset < dump.levelsBuffered || dump.reader.HasNext()
 }
-
-const microSecondsPerDay = 24 * 3600e6
 
 func (dump *Dumper) FormatValue(val interface{}, width int) string {
 	fmtStr := fmt.Sprintf("-%d", width)

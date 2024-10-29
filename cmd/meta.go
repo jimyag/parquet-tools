@@ -6,7 +6,7 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/apache/arrow/go/v16/parquet/metadata"
+	"github.com/apache/arrow/go/v17/parquet/metadata"
 	"github.com/jedib0t/go-pretty/v6/table"
 	"github.com/jedib0t/go-pretty/v6/text"
 	"github.com/jimyag/log"

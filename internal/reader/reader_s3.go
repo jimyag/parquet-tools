@@ -11,7 +11,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/apache/arrow/go/v16/parquet"
+	"github.com/apache/arrow/go/v17/parquet"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3iface"

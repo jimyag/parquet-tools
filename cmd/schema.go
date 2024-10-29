@@ -3,7 +3,7 @@ package cmd
 import (
 	"os"
 
-	"github.com/apache/arrow/go/v16/parquet/schema"
+	"github.com/apache/arrow/go/v17/parquet/schema"
 	"github.com/spf13/cobra"
 )
 

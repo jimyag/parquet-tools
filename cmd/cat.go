@@ -16,8 +16,10 @@ var catCmd = &cobra.Command{
 	Run:   catRun,
 }
 
-var convertInt96AsTime bool
-var count int64
+var (
+	convertInt96AsTime bool
+	count              int64
+)
 
 func init() {
 	catCmd.PersistentFlags().BoolVarP(&convertInt96AsTime, "convert", "", false, "convert int96 as time,false print as int96")

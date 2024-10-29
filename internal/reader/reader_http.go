@@ -5,7 +5,7 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/apache/arrow/go/v16/parquet"
+	"github.com/apache/arrow/go/v17/parquet"
 )
 
 var _ parquet.ReaderAtSeeker = (*HttpReader)(nil)

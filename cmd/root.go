@@ -9,7 +9,7 @@ import (
 	"os"
 
 	"github.com/BurntSushi/toml"
-	"github.com/apache/arrow/go/v16/parquet/file"
+	"github.com/apache/arrow/go/v17/parquet/file"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
