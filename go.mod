@@ -9,6 +9,7 @@ require (
 	github.com/jedib0t/go-pretty/v6 v6.5.8
 	github.com/jimyag/log v0.1.1
 	github.com/spf13/cobra v1.8.0
+	golang.org/x/text v0.16.0
 )
 
 require (
