@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/apache/arrow/go/v17/parquet/schema"
+	"github.com/jimyag/log"
 	"github.com/spf13/cobra"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
@@ -22,9 +23,14 @@ func init() {
 }
 
 func structRun(cmd *cobra.Command, args []string) {
-	rdr := getReader()
-	parquetSchema := rdr.MetaData().Schema.Root()
-	printGoStruct(parquetSchema, os.Stdout)
+	rdrs, err := getReaders(args)
+	if err != nil {
+		log.Panic(err).Msg("error getting readers")
+	}
+	for _, rdr := range rdrs {
+		parquetSchema := rdr.MetaData().Schema.Root()
+		printGoStruct(parquetSchema, os.Stdout)
+	}
 }
 
 func printGoStruct(node *schema.GroupNode, w *os.File) {

@@ -28,70 +28,75 @@ func init() {
 }
 
 func catRun(cmd *cobra.Command, args []string) {
-	rdr := getReader()
-	if count == 0 {
-		count = rdr.MetaData().NumRows + 1
+	rdrs, err := getReaders(args)
+	if err != nil {
+		log.Panic(err).Msg("error getting readers")
 	}
-	var printNum int64
-	for r := 0; r < rdr.NumRowGroups(); r++ {
-		rgr := rdr.RowGroup(r)
-		scanners := make([]*dumper.Dumper, rdr.MetaData().Schema.NumColumns())
-		fields := make([]string, rdr.MetaData().Schema.NumColumns())
-		for c := range rdr.MetaData().Schema.NumColumns() {
-			col, err := rgr.Column(c)
-			if err != nil {
-				log.Panic(err).Int("column", c).Msg("error getting column")
-			}
-			scanners[c] = dumper.NewDumper(col, convertInt96AsTime)
-			fields[c] = col.Descriptor().Path()
+	for _, rdr := range rdrs {
+		if count == 0 {
+			count = rdr.MetaData().NumRows + 1
 		}
-		var line string
-		for {
-			// printNum is used to limit the number of rows
-			if printNum >= count {
-				return
-			}
-			if line == "" {
-				line = "{"
-			} else {
-				line = "\n{"
-			}
-
-			data := false
-			first := true
-			for idx, s := range scanners {
-				if val, ok := s.Next(); ok {
-					if !data {
-						fmt.Print(line)
-					}
-					data = true
-					if val == nil {
-						continue
-					}
-					if !first {
-						fmt.Print(",")
-					}
-					first = false
-					switch val.(type) {
-					case bool, int32, int64, float32, float64:
-					default:
-						val = s.FormatValue(val, 0)
-					}
-					jsonVal, err := json.Marshal(val)
-					if err != nil {
-						log.Panic(err).
-							Str("val", fmt.Sprintf("%+v", val)).
-							Msg("error marshalling json")
-					}
-					fmt.Printf("%q: %s", fields[idx], jsonVal)
+		var printNum int64
+		for r := 0; r < rdr.NumRowGroups(); r++ {
+			rgr := rdr.RowGroup(r)
+			scanners := make([]*dumper.Dumper, rdr.MetaData().Schema.NumColumns())
+			fields := make([]string, rdr.MetaData().Schema.NumColumns())
+			for c := range rdr.MetaData().Schema.NumColumns() {
+				col, err := rgr.Column(c)
+				if err != nil {
+					log.Panic(err).Int("column", c).Msg("error getting column")
 				}
+				scanners[c] = dumper.NewDumper(col, convertInt96AsTime)
+				fields[c] = col.Descriptor().Path()
 			}
-			if !data {
-				break
+			var line string
+			for {
+				// printNum is used to limit the number of rows
+				if printNum >= count {
+					return
+				}
+				if line == "" {
+					line = "{"
+				} else {
+					line = "\n{"
+				}
+
+				data := false
+				first := true
+				for idx, s := range scanners {
+					if val, ok := s.Next(); ok {
+						if !data {
+							fmt.Print(line)
+						}
+						data = true
+						if val == nil {
+							continue
+						}
+						if !first {
+							fmt.Print(",")
+						}
+						first = false
+						switch val.(type) {
+						case bool, int32, int64, float32, float64:
+						default:
+							val = s.FormatValue(val, 0)
+						}
+						jsonVal, err := json.Marshal(val)
+						if err != nil {
+							log.Panic(err).
+								Str("val", fmt.Sprintf("%+v", val)).
+								Msg("error marshalling json")
+						}
+						fmt.Printf("%q: %s", fields[idx], jsonVal)
+					}
+				}
+				if !data {
+					break
+				}
+				fmt.Print("}")
+				printNum++
 			}
-			fmt.Print("}")
-			printNum++
+			fmt.Println()
 		}
-		fmt.Println()
 	}
 }

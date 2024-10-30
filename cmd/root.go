@@ -4,17 +4,11 @@ Copyright © 2024 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
-	"context"
+	"fmt"
 	"net/url"
 	"os"
 
-	"github.com/BurntSushi/toml"
 	"github.com/apache/arrow/go/v17/parquet/file"
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/credentials"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/jimyag/log"
 	"github.com/spf13/cobra"
 
 	"github.com/jimyag/parquet-tools/internal/reader"
@@ -25,17 +19,6 @@ var rootCmd = &cobra.Command{
 	Short: "Utility to inspect Parquet files",
 	Run:   func(cmd *cobra.Command, args []string) {},
 }
-
-var (
-	filename       string
-	region         string
-	access_key     string
-	secret_key     string
-	endpoint       string
-	disableSSL     bool
-	forcePathStyle bool
-	configFile     string
-)
 
 const (
 	s3Scheme    = "s3"
@@ -58,15 +41,6 @@ const (
 )
 
 func init() {
-	rootCmd.PersistentFlags().StringVarP(&filename, "filename", "f", "", "parquet filename, s3a://test.parquet test.parquet file://test.parquet file:///test.parquet ")
-	rootCmd.PersistentFlags().StringVarP(&region, "region", "", "", "s3 region")
-	rootCmd.PersistentFlags().StringVarP(&access_key, "ak", "", "", "s3 access_key")
-	rootCmd.PersistentFlags().StringVarP(&secret_key, "sk", "", "", "s3 secret_key")
-	rootCmd.PersistentFlags().StringVarP(&endpoint, "ep", "", "", "s3 end_point")
-	rootCmd.PersistentFlags().BoolVarP(&disableSSL, "ds", "", false, "s3 disable_ssl")
-	rootCmd.PersistentFlags().BoolVarP(&forcePathStyle, "fp", "", true, "s3 force_path_style")
-	rootCmd.PersistentFlags().StringVarP(&configFile, "config", "c", "", s3ConfigFileUsage)
-	_ = rootCmd.MarkPersistentFlagRequired("filename")
 }
 
 func Execute() {
@@ -85,66 +59,70 @@ type s3Config struct {
 	EndPoint       string `toml:"endpoint" json:"endpoint"`
 }
 
-func getReader() *file.Reader {
-	u, err := url.Parse(filename)
-	if err != nil {
-		log.Panic(err).
-			Str("filename", filename).
-			Msg("error parsing filename")
-	}
-	if u.Scheme == "" || u.Scheme == localScheme {
-		rdr, err := file.OpenParquetFile(filename, false)
+func getReaders(filenames []string) ([]*file.Reader, error) {
+	readers := make([]*file.Reader, len(filenames))
+	for i, filename := range filenames {
+		u, err := url.Parse(filename)
 		if err != nil {
-			log.Panic(err).Msg("error opening parquet file")
+			return nil, err
 		}
-		return rdr
-	}
-
-	if u.Scheme == httpScheme || u.Scheme == httpsScheme {
-		httpReader, err := reader.NewHttpReader(filename)
-		if err != nil {
-			log.Panic(err).Msg("error creating http reader")
-		}
-		rdr, err := file.NewParquetReader(httpReader)
-		if err != nil {
-			log.Panic(err).Msg("error creating parquet reader")
-		}
-		return rdr
-	}
-	if u.Scheme == s3Scheme || u.Scheme == s3aScheme {
-		if configFile != "" {
-			cfg := s3Config{}
-			if _, err := toml.DecodeFile(configFile, &cfg); err != nil {
-				log.Panic(err).Msg("error decoding config file")
+		if u.Scheme == "" || u.Scheme == localScheme {
+			rdr, err := file.OpenParquetFile(filename, false)
+			if err != nil {
+				return nil, err
 			}
-			region = cfg.Region
-			access_key = cfg.AccessKey
-			secret_key = cfg.SecretKey
-			disableSSL = cfg.DisableSSL
-			forcePathStyle = cfg.ForcePathStyle
-			endpoint = cfg.EndPoint
+			readers[i] = rdr
+			continue
 		}
-		if endpoint == "" {
-			log.Panic().Msg("end_point is required for s3 scheme")
+
+		if u.Scheme == httpScheme || u.Scheme == httpsScheme {
+			httpReader, err := reader.NewHttpReader(filename)
+			if err != nil {
+				return nil, err
+			}
+			rdr, err := file.NewParquetReader(httpReader)
+			if err != nil {
+				return nil, err
+			}
+			readers[i] = rdr
+			continue
 		}
-		mySession := session.Must(session.NewSession(&aws.Config{
-			Credentials:      credentials.NewStaticCredentials(access_key, secret_key, ""),
-			Endpoint:         aws.String(endpoint),
-			Region:           aws.String(region),
-			DisableSSL:       aws.Bool(disableSSL),
-			S3ForcePathStyle: aws.Bool(forcePathStyle),
-		}))
-		s3Cli := s3.New(mySession)
-		s3Reader, err := reader.NewS3Reader(context.Background(), filename, s3Cli)
-		if err != nil {
-			log.Panic(err).Msg("error creating s3 reader")
+		if u.Scheme == s3Scheme || u.Scheme == s3aScheme {
+			// if configFile != "" {
+			// 	cfg := s3Config{}
+			// 	if _, err := toml.DecodeFile(configFile, &cfg); err != nil {
+			// 		log.Panic(err).Msg("error decoding config file")
+			// 	}
+			// 	region = cfg.Region
+			// 	access_key = cfg.AccessKey
+			// 	secret_key = cfg.SecretKey
+			// 	disableSSL = cfg.DisableSSL
+			// 	forcePathStyle = cfg.ForcePathStyle
+			// 	endpoint = cfg.EndPoint
+			// }
+			// if endpoint == "" {
+			// 	log.Panic().Msg("end_point is required for s3 scheme")
+			// }
+			// mySession := session.Must(session.NewSession(&aws.Config{
+			// 	Credentials:      credentials.NewStaticCredentials(access_key, secret_key, ""),
+			// 	Endpoint:         aws.String(endpoint),
+			// 	Region:           aws.String(region),
+			// 	DisableSSL:       aws.Bool(disableSSL),
+			// 	S3ForcePathStyle: aws.Bool(forcePathStyle),
+			// }))
+			// s3Cli := s3.New(mySession)
+			// s3Reader, err := reader.NewS3Reader(context.Background(), filename, s3Cli)
+			// if err != nil {
+			// 	return nil, err
+			// }
+			// rdr, err := file.NewParquetReader(s3Reader)
+			// if err != nil {
+			// 	return nil, err
+			// }
+			// readers[i] = rdr
+			// continue
 		}
-		rdr, err := file.NewParquetReader(s3Reader)
-		if err != nil {
-			log.Panic(err).Msg("error creating parquet reader")
-		}
-		return rdr
+		return nil, fmt.Errorf("unsupported scheme: %s", u.Scheme)
 	}
-	log.Panic().Msg("unsupported scheme")
-	return nil
+	return readers, nil
 }

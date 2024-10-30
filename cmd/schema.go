@@ -4,6 +4,7 @@ import (
 	"os"
 
 	"github.com/apache/arrow/go/v17/parquet/schema"
+	"github.com/jimyag/log"
 	"github.com/spf13/cobra"
 )
 
@@ -18,6 +19,11 @@ func init() {
 }
 
 func schemaRun(cmd *cobra.Command, args []string) {
-	rdr := getReader()
-	schema.PrintSchema(rdr.MetaData().Schema.Root(), os.Stdout, 2)
+	rdrs, err := getReaders(args)
+	if err != nil {
+		log.Panic(err).Msg("error getting readers")
+	}
+	for _, rdr := range rdrs {
+		schema.PrintSchema(rdr.MetaData().Schema.Root(), os.Stdout, 2)
+	}
 }

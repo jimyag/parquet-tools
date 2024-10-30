@@ -3,8 +3,8 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 
+	"github.com/jimyag/log"
 	"github.com/spf13/cobra"
 )
 
@@ -20,11 +20,16 @@ func init() {
 }
 
 func footer(cmd *cobra.Command, args []string) {
-	rdr := getReader()
-	fileMetadata := rdr.MetaData()
-	m, err := json.MarshalIndent(fileMetadata, "", "  ")
+	rdrs, err := getReaders(args)
 	if err != nil {
-		log.Panicln(err)
+		log.Panic(err).Msg("error getting readers")
 	}
-	fmt.Println(string(m))
+	for _, rdr := range rdrs {
+		fileMetadata := rdr.MetaData()
+		m, err := json.MarshalIndent(fileMetadata, "", "  ")
+		if err != nil {
+			log.Panic(err).Msg("error marshalling file metadata")
+		}
+		fmt.Println(string(m))
+	}
 }
