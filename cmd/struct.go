@@ -8,8 +8,6 @@ import (
 	"github.com/apache/arrow/go/v17/parquet/schema"
 	"github.com/jimyag/log"
 	"github.com/spf13/cobra"
-	"golang.org/x/text/cases"
-	"golang.org/x/text/language"
 )
 
 var structCmd = &cobra.Command{
@@ -34,29 +32,39 @@ func structRun(cmd *cobra.Command, args []string) {
 }
 
 func printGoStruct(node *schema.GroupNode, w *os.File, depth int) {
-	indent := strings.Repeat("  ", depth)
-	_, _ = w.WriteString(fmt.Sprintf("%stype %s struct {\n", indent, node.Name()))
-	depth++
-	indent = strings.Repeat("  ", depth)
+	indent := strings.Repeat("\t", depth)
+	if depth == 0 {
+		_, _ = w.WriteString(fmt.Sprintf("type %s struct {\n", node.Name()))
+	}
+
 	for i := 0; i < node.NumFields(); i++ {
 		field := node.Field(i)
-		field.Type()
 		fieldName := field.Name()
+
 		if group, ok := field.(*schema.GroupNode); ok {
-			// 先定义嵌套的结构体
-			printGoStruct(group, w, depth+1)
-			// 在当前结构体中引用嵌套结构
-			_, _ = w.WriteString(fmt.Sprintf("%s%s %s `parquet:\"%s\"`\n",
-				indent, toCamelCase(fieldName), group.Name(), fieldName))
+			// 对于嵌套结构，直接在字段定义中展开结构体
+			_, _ = w.WriteString(fmt.Sprintf("%s%s struct {\n",
+				indent, toCamelCase(fieldName)))
+			// 递归处理嵌套字段
+			for j := 0; j < group.NumFields(); j++ {
+				nestedField := group.Field(j)
+				nestedName := nestedField.Name()
+				nestedType := parquetTypeToGoType(nestedField)
+				_, _ = w.WriteString(fmt.Sprintf("%s\t%s %s `parquet:\"%s\"`\n",
+					indent, toCamelCase(nestedName), nestedType, nestedName))
+			}
+			_, _ = w.WriteString(fmt.Sprintf("%s} `parquet:\"%s\"`\n",
+				indent, fieldName))
 		} else {
 			goType := parquetTypeToGoType(field)
 			_, _ = w.WriteString(fmt.Sprintf("%s%s %s `parquet:\"%s\"`\n",
 				indent, toCamelCase(fieldName), goType, fieldName))
 		}
 	}
-	depth = depth - 1
-	indent = strings.Repeat("  ", depth)
-	_, _ = w.WriteString(fmt.Sprintf("%s}\n", indent))
+
+	if depth == 0 {
+		_, _ = w.WriteString("}\n")
+	}
 }
 
 // 辅助函数：将 parquet 数据类型转换为 Go 类型
@@ -137,10 +145,22 @@ func parquetTypeToGoType(field schema.Node) string {
 
 // 辅助函数：转换为驼峰命名
 func toCamelCase(s string) string {
+	// 如果不包含下划线，只需要处理首字母
+	if !strings.Contains(s, "_") {
+		if len(s) == 0 {
+			return s
+		}
+		// 将首字母转为大写
+		return strings.ToUpper(s[:1]) + s[1:]
+	}
+
+	// 处理包含下划线的情况
 	words := strings.Split(s, "_")
-	caser := cases.Title(language.Und)
 	for i := range words {
-		words[i] = caser.String(words[i])
+		if len(words[i]) > 0 {
+			// 将每个单词的首字母转为大写
+			words[i] = strings.ToUpper(words[i][:1]) + words[i][1:]
+		}
 	}
 	return strings.Join(words, "")
 }
