@@ -11,6 +11,8 @@ Supported reading from: http/https URL, local file, s3/s3a URL
 - footer: Print the Parquet file footer in json format
 - meta: Pretty Print a Parquet file's metadata
 - schema: Pretty print the Avro schema for a file
+- struct: Print the Go struct for a file
+- diff: Diff two Parquet files schema
 
 ## Install
 
@@ -27,7 +29,7 @@ parquet-tools -h
 pretty print the Avro schema for a file
 
 ``` bash
-parquet-tools meta -f https://github.com/jimyag/parquet-tools/raw/main/testdata/v0.7.1.parquet
+parquet-tools meta https://github.com/jimyag/parquet-tools/raw/main/testdata/v0.7.1.parquet
 +-------------------------+------------------------------------------+
 | KEY                     | VALUE                                    |
 +-------------------------+------------------------------------------+
@@ -187,7 +189,7 @@ required group field_id=-1 schema {
 read from http or https
 
 ``` bash
-parquet-tools schema -f https://github.com/jimyag/parquet-tools/raw/main/testdata/v0.7.1.parquet
+parquet-tools schema https://github.com/jimyag/parquet-tools/raw/main/testdata/v0.7.1.parquet
 required group field_id=-1 schema {
   optional double field_id=-1 carat;
   optional byte_array field_id=-1 cut (String);
@@ -203,10 +205,35 @@ required group field_id=-1 schema {
 }
 ```
 
+print the Go struct for a file
+
+```bash
+parquet-tools struct https://github.com/jimyag/parquet-tools/raw/main/testdata/v0.7.1.parquet
+type schema struct {
+  Carat any `parquet:"carat"`
+  Cut string `parquet:"cut"`
+  Color string `parquet:"color"`
+  Clarity string `parquet:"clarity"`
+  Depth any `parquet:"depth"`
+  Table any `parquet:"table"`
+  Price any `parquet:"price"`
+  X any `parquet:"x"`
+  Y any `parquet:"y"`
+  Z any `parquet:"z"`
+  IndexLevel0 any `parquet:"__index_level_0__"`
+}
+```
+
+diff two Parquet files schema
+
+```bash
+parquet-tools diff v0.7.1.parquet v0.7.2.parquet
+```
+
 read from local file
 
 ``` bash
-parquet-tools schema -f v0.7.1.parquet
+parquet-tools schema v0.7.1.parquet
 required group field_id=-1 schema {
   optional double field_id=-1 carat;
   optional byte_array field_id=-1 cut (String);
@@ -235,7 +262,7 @@ force_path_style = true
 ```
 
 ``` bash
-parquet-tools schema -f s3://jimyag/parquet-tools/testdata/v0.7.1.parquet -c s3.toml
+parquet-tools schema s3://jimyag/parquet-tools/testdata/v0.7.1.parquet --s3-config s3.toml
 required group field_id=-1 schema {
   optional double field_id=-1 carat;
   optional byte_array field_id=-1 cut (String);
