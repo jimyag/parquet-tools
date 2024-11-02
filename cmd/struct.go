@@ -29,20 +29,34 @@ func structRun(cmd *cobra.Command, args []string) {
 	}
 	for _, rdr := range rdrs {
 		parquetSchema := rdr.MetaData().Schema.Root()
-		printGoStruct(parquetSchema, os.Stdout)
+		printGoStruct(parquetSchema, os.Stdout, 0)
 	}
 }
 
-func printGoStruct(node *schema.GroupNode, w *os.File) {
-	_, _ = w.WriteString(fmt.Sprintf("type %s struct {\n", node.Name()))
+func printGoStruct(node *schema.GroupNode, w *os.File, depth int) {
+	indent := strings.Repeat("  ", depth)
+	_, _ = w.WriteString(fmt.Sprintf("%stype %s struct {\n", indent, node.Name()))
+	depth++
+	indent = strings.Repeat("  ", depth)
 	for i := 0; i < node.NumFields(); i++ {
 		field := node.Field(i)
+		field.Type()
 		fieldName := field.Name()
-		goType := parquetTypeToGoType(field)
-		_, _ = w.WriteString(fmt.Sprintf("    %s %s `parquet:\"%s\"`\n",
-			toCamelCase(fieldName), goType, fieldName))
+		if group, ok := field.(*schema.GroupNode); ok {
+			// 先定义嵌套的结构体
+			printGoStruct(group, w, depth+1)
+			// 在当前结构体中引用嵌套结构
+			_, _ = w.WriteString(fmt.Sprintf("%s%s %s `parquet:\"%s\"`\n",
+				indent, toCamelCase(fieldName), group.Name(), fieldName))
+		} else {
+			goType := parquetTypeToGoType(field)
+			_, _ = w.WriteString(fmt.Sprintf("%s%s %s `parquet:\"%s\"`\n",
+				indent, toCamelCase(fieldName), goType, fieldName))
+		}
 	}
-	_, _ = w.WriteString("}\n")
+	depth = depth - 1
+	indent = strings.Repeat("  ", depth)
+	_, _ = w.WriteString(fmt.Sprintf("%s}\n", indent))
 }
 
 // 辅助函数：将 parquet 数据类型转换为 Go 类型
@@ -89,17 +103,33 @@ func parquetTypeToGoType(field schema.Node) string {
 	case strings.HasPrefix(logicalType, "JSON"):
 		return "json.RawMessage"
 	case strings.HasPrefix(logicalType, "UUID"):
-		return "string"
-	// Map
+		return "uuid.UUID" // github.com/google/uuid
 	// List
-	// Enum
-	// Unknown
-	// JSON
-	// BSON
-	// UUID
-	// Interval
-	// Null
-	// None
+	case strings.HasPrefix(logicalType, "List"):
+		// 如果是 List 类型，尝试获取元素类型
+		if listNode, ok := field.(*schema.GroupNode); ok && listNode.NumFields() > 0 {
+			elementField := listNode.Field(0)
+			elementType := parquetTypeToGoType(elementField)
+			return "[]" + elementType
+		}
+		return "[]any"
+	// Map
+	case strings.HasPrefix(logicalType, "Map"):
+		return "map[string]any"
+	case strings.HasPrefix(logicalType, "Array"):
+		return "[]"
+	case strings.HasPrefix(logicalType, "Struct"):
+		return "struct"
+	case strings.HasPrefix(logicalType, "Enum"):
+		return "string"
+	case strings.Contains(logicalType, "Interval"):
+		return "time.Duration"
+	case strings.HasPrefix(logicalType, "Unknown"):
+		return "any"
+	case strings.HasPrefix(logicalType, "Null"):
+		return "any"
+	case strings.HasPrefix(logicalType, "None"):
+		return "any"
 	default:
 		return "any"
 	}
