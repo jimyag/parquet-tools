@@ -27,7 +27,8 @@ func init() {
 func structRun(cmd *cobra.Command, args []string) {
 	rdrs, err := getReaders(args)
 	if err != nil {
-		log.Panic(err).Msg("error getting readers")
+		log.Error(err).Msg("error getting readers")
+		return
 	}
 	for _, rdr := range rdrs {
 		parquetSchema := rdr.MetaData().Schema.Root()

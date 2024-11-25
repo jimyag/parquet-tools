@@ -22,13 +22,15 @@ func init() {
 func footer(cmd *cobra.Command, args []string) {
 	rdrs, err := getReaders(args)
 	if err != nil {
-		log.Panic(err).Msg("error getting readers")
+		log.Error().Msgf("error getting readers: %s", err)
+		return
 	}
 	for _, rdr := range rdrs {
 		fileMetadata := rdr.MetaData()
 		m, err := json.MarshalIndent(fileMetadata, "", "  ")
 		if err != nil {
-			log.Panic(err).Msg("error marshalling file metadata")
+			log.Error().Msgf("error marshalling file metadata: %s", err)
+			return
 		}
 		fmt.Println(string(m))
 	}

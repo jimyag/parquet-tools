@@ -15,6 +15,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3iface"
+	"github.com/jimyag/log"
 )
 
 var (
@@ -32,13 +33,15 @@ type S3Reader struct {
 	body   io.ReadCloser
 }
 
-func parsePath(path string) (bucket, key string, err error) {
+func ParsePath(path string) (bucket, key string, err error) {
 	u, err := url.Parse(path)
 	if err != nil {
 		return
 	}
 	if u.Scheme != "s3" && u.Scheme != "s3a" {
+		log.Error().Msgf("invalid s3 path: %s", path)
 		err = ErrInvalidS3Path
+		return
 	}
 	bucket = u.Host
 	key = strings.TrimPrefix(u.Path, "/")
@@ -59,8 +62,8 @@ func head(ctx context.Context, bucket, key string, client s3iface.S3API) (*s3.He
 	})
 }
 
-func stat(ctx context.Context, uri string, client s3iface.S3API) (*fileInfo, error) {
-	bucket, key, err := parsePath(uri)
+func Stat(ctx context.Context, uri string, client s3iface.S3API) (*fileInfo, error) {
+	bucket, key, err := ParsePath(uri)
 	if err != nil {
 		return nil, err
 	}
@@ -77,11 +80,11 @@ func stat(ctx context.Context, uri string, client s3iface.S3API) (*fileInfo, err
 }
 
 func NewS3Reader(ctx context.Context, filepath string, client s3iface.S3API) (*S3Reader, error) {
-	info, err := stat(ctx, filepath, client)
+	info, err := Stat(ctx, filepath, client)
 	if err != nil {
 		return nil, err
 	}
-	bucket, key, err := parsePath(filepath)
+	bucket, key, err := ParsePath(filepath)
 	if err != nil {
 		return nil, err
 	}

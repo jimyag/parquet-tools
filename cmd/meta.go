@@ -27,7 +27,8 @@ func init() {
 func meta(cmd *cobra.Command, args []string) {
 	rdrs, err := getReaders(args)
 	if err != nil {
-		log.Panic(err).Msg("error getting readers")
+		log.Error(err).Msg("error getting readers")
+		return
 	}
 	for i, rdr := range rdrs {
 		fileMetadata := rdr.MetaData()
@@ -100,12 +101,14 @@ func meta(cmd *cobra.Command, args []string) {
 				descRecord := fileMetadata.Schema.Column(c)
 				row = append(row, descRecord.Name())
 				if err != nil {
-					log.Panic(err).Msg("error getting column chunk metadata")
+					log.Error(err).Msg("error getting column chunk metadata")
+					return
 				}
 				if set, _ := chunkMeta.StatsSet(); set {
 					stats, err := chunkMeta.Statistics()
 					if err != nil {
-						log.Panic(err).Msg("error getting column chunk statistics")
+						log.Error(err).Msg("error getting column chunk statistics")
+						return
 					}
 					row = append(row, fmt.Sprint(chunkMeta.NumValues()))
 					if stats.HasMinMax() {

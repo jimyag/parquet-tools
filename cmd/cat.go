@@ -30,7 +30,8 @@ func init() {
 func catRun(cmd *cobra.Command, args []string) {
 	rdrs, err := getReaders(args)
 	if err != nil {
-		log.Panic(err).Msg("error getting readers")
+		log.Error(err).Msg("error getting readers")
+		return
 	}
 	for _, rdr := range rdrs {
 		if count == 0 {
@@ -44,7 +45,8 @@ func catRun(cmd *cobra.Command, args []string) {
 			for c := range rdr.MetaData().Schema.NumColumns() {
 				col, err := rgr.Column(c)
 				if err != nil {
-					log.Panic(err).Int("column", c).Msg("error getting column")
+					log.Error(err).Int("column", c).Msg("error getting column")
+					return
 				}
 				scanners[c] = dumper.NewDumper(col, convertInt96AsTime)
 				fields[c] = col.Descriptor().Path()
@@ -83,9 +85,10 @@ func catRun(cmd *cobra.Command, args []string) {
 						}
 						jsonVal, err := json.Marshal(val)
 						if err != nil {
-							log.Panic(err).
+							log.Error(err).
 								Str("val", fmt.Sprintf("%+v", val)).
 								Msg("error marshalling json")
+							return
 						}
 						fmt.Printf("%q: %s", fields[idx], jsonVal)
 					}

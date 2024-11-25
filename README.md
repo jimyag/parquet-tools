@@ -253,6 +253,7 @@ read from s3 bucket
 
 ``` bash
 cat s3.toml
+[[s3]]
 region = "xxxx"
 access_key = "ak"
 secret_key = "sk"

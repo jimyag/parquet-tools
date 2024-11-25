@@ -22,11 +22,13 @@ func init() {
 
 func diffRun(cmd *cobra.Command, args []string) {
 	if len(args) != 2 {
-		log.Panic().Msg("diff requires two parquet files")
+		log.Error().Msg("diff requires two parquet files")
+		return
 	}
 	rdrs, err := getReaders(args)
 	if err != nil {
-		log.Panic(err).Msg("error getting readers")
+		log.Error(err).Msg("error getting readers")
+		return
 	}
 	rdr1 := rdrs[0]
 	rdr2 := rdrs[1]
