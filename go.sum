@@ -28,6 +28,8 @@ github.com/inconshreveable/mousetrap v1.1.0 h1:wN+x4NVGpMsO7ErUn/mUI3vEoE6Jt13X2
 github.com/inconshreveable/mousetrap v1.1.0/go.mod h1:vpF70FUmC8bwa3OWnCshd2FqLfsEA9PFc4w1p2J65bw=
 github.com/jedib0t/go-pretty/v6 v6.5.8 h1:8BCzJdSvUbaDuRba4YVh+SKMGcAAKdkcF3SVFbrHAtQ=
 github.com/jedib0t/go-pretty/v6 v6.5.8/go.mod h1:zbn98qrYlh95FIhwwsbIip0LYpwSG8SUOScs+v9/t0E=
+github.com/jimmicro/version v1.0.0 h1:xSmSTIXP++HBaaSiI80a9choe/baJFWIgQVY03MzHJ4=
+github.com/jimmicro/version v1.0.0/go.mod h1:/t8xgCGvTfdpjvNgcZGlhZW4weqTcb5DFinrGWZ/9d8=
 github.com/jimyag/log v0.1.1 h1:b3CTE/xGBWAioiqKXICZM8jdsbcrVjOvmR6MyATlTtk=
 github.com/jimyag/log v0.1.1/go.mod h1:F12+oHI11ydaa4j0/aYfMPQe6z/igZJraWu9ILCOHUY=
 github.com/jmespath/go-jmespath v0.4.0 h1:BEgLn5cpjn8UN1mAw4NjwDrS35OdebyEtFe+9YPoQUg=

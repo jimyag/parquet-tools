@@ -1,6 +1,3 @@
-/*
-Copyright © 2024 NAME HERE <EMAIL ADDRESS>
-*/
 package cmd
 
 import (
@@ -17,6 +14,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/jimmicro/version"
 	"github.com/jimyag/log"
 	"github.com/spf13/cobra"
 
@@ -24,8 +22,9 @@ import (
 )
 
 var rootCmd = &cobra.Command{
-	Use:   "parquet-tools",
-	Short: "Utility to inspect Parquet files",
+	Use:     "parquet-tools",
+	Short:   "Utility to inspect Parquet files",
+	Version: version.Version(),
 }
 
 const (
@@ -66,8 +65,8 @@ func init() {
 	}
 	s3ConfigFile = filepath.Join(home, s3ConfigFile)
 	if _, err := os.Stat(s3ConfigFile); os.IsNotExist(err) {
-		os.MkdirAll(filepath.Dir(s3ConfigFile), 0700)
-		os.WriteFile(s3ConfigFile, []byte(s3ConfigFileUsage), 0600)
+		os.MkdirAll(filepath.Dir(s3ConfigFile), 0o700)
+		os.WriteFile(s3ConfigFile, []byte(s3ConfigFileUsage), 0o600)
 	}
 	rootCmd.PersistentFlags().StringVarP(&s3ConfigFile, "s3-config", "", s3ConfigFile, "s3 config file")
 }
@@ -84,13 +83,13 @@ type Config struct {
 }
 
 type s3Cfg struct {
-	Region         string   `toml:"region" json:"region"`
-	AccessKey      string   `toml:"access_key" json:"access_key"`
-	SecretKey      string   `toml:"secret_key" json:"secret_key"`
-	DisableSSL     bool     `toml:"disable_ssl" json:"disable_ssl"`
+	Region         string   `toml:"region"           json:"region"`
+	AccessKey      string   `toml:"access_key"       json:"access_key"`
+	SecretKey      string   `toml:"secret_key"       json:"secret_key"`
+	DisableSSL     bool     `toml:"disable_ssl"      json:"disable_ssl"`
 	ForcePathStyle bool     `toml:"force_path_style" json:"force_path_style"`
-	EndPoint       string   `toml:"endpoint" json:"endpoint"`
-	Scopes         []string `toml:"scopes" json:"scopes"`
+	EndPoint       string   `toml:"endpoint"         json:"endpoint"`
+	Scopes         []string `toml:"scopes"           json:"scopes"`
 }
 
 func getReaders(filenames []string) ([]*file.Reader, error) {
@@ -159,7 +158,7 @@ func getReaders(filenames []string) ([]*file.Reader, error) {
 					c.Scopes = append(c.Scopes, bucket)
 					cfg.S3[ic] = c
 					// update config file
-					f, err := os.OpenFile(s3ConfigFile, os.O_WRONLY, 0600)
+					f, err := os.OpenFile(s3ConfigFile, os.O_WRONLY, 0o600)
 					if err != nil {
 						log.Error().Msgf("error opening s3 config file: %s", err)
 						return nil, err

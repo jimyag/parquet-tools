@@ -18,3 +18,5 @@
 bin/
 
 /.vscode/
+
+parquet-tools

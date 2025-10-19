@@ -36,16 +36,16 @@ type S3Reader struct {
 func ParsePath(path string) (bucket, key string, err error) {
 	u, err := url.Parse(path)
 	if err != nil {
-		return
+		return bucket, key, err
 	}
 	if u.Scheme != "s3" && u.Scheme != "s3a" {
 		log.Error().Msgf("invalid s3 path: %s", path)
 		err = ErrInvalidS3Path
-		return
+		return bucket, key, err
 	}
 	bucket = u.Host
 	key = strings.TrimPrefix(u.Path, "/")
-	return
+	return bucket, key, err
 }
 
 type fileInfo struct {

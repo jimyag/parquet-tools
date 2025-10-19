@@ -3,9 +3,13 @@ on:
     tags:
       - v*
 
+permissions:
+  contents: write
+  packages: write
+
 jobs:
   releases-matrix:
-    name: Release Go Binary
+    name: Release Parquet Tools
     runs-on: ubuntu-latest
     strategy:
       max-parallel: 1
@@ -24,17 +28,19 @@ jobs:
     steps:
       - name: Show environment
         run: export
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: ncipollo/release-action@v1
         with:
           allowUpdates: true
           token: ${{ secrets.GITHUB_TOKEN }}
-      - uses: wangyoucao577/go-release-action@master
+      - uses: wangyoucao577/go-release-action@v1
+        # https://github.com/wangyoucao577/go-release-action
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           goos: ${{ matrix.goos }}
           goarch: ${{ matrix.goarch }}
-          build_command: "make release"
-          binary_name: "parquet-tools"
-          extra_files: parquet-tools
-
+          build_command: "make build"
+          binary_name: parquet-tools
+          compress_assets: "OFF" # only build binary, not assets
+          asset_name: "parquet-tools-${{ matrix.goos }}-${{ matrix.goarch }}"
+          md5sum: FALSE # github release already provides sha256 checksum
