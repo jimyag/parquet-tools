@@ -1,8 +1,9 @@
 package cmd
 
 import (
-	"encoding/json"
+	"encoding/csv"
 	"fmt"
+	"os"
 
 	"github.com/jimyag/log"
 	"github.com/spf13/cobra"
@@ -19,87 +20,100 @@ var catCmd = &cobra.Command{
 var (
 	convertInt96AsTime bool
 	count              int64
+	catFormat          string
+	catColumns         string
 )
 
 func init() {
-	catCmd.PersistentFlags().BoolVarP(&convertInt96AsTime, "convert", "", false, "convert int96 as time,false print as int96")
-	catCmd.PersistentFlags().Int64VarP(&count, "count", "n", 0, "print count rows")
+	catCmd.PersistentFlags().BoolVar(&convertInt96AsTime, "convert", false, "convert int96 as time, false prints as int96")
+	catCmd.PersistentFlags().Int64VarP(&count, "count", "n", 0, "number of rows to print per file (0 = all)")
+	catCmd.PersistentFlags().StringVarP(&catFormat, "format", "f", "jsonl", "output format: jsonl, csv, json")
+	catCmd.PersistentFlags().StringVar(&catColumns, "columns", "", "comma-separated column names to include (default: all)")
 	rootCmd.AddCommand(catCmd)
 }
 
 func catRun(cmd *cobra.Command, args []string) {
+	if catFormat != "jsonl" && catFormat != "csv" && catFormat != "json" {
+		log.Error().Msgf("unknown format %q: must be jsonl, csv, or json", catFormat)
+		return
+	}
+
 	rdrs, err := getReaders(args)
 	if err != nil {
 		log.Error(err).Msg("error getting readers")
 		return
 	}
+
+	colFilter := parseColFilter(catColumns)
+
+	var csvW *csv.Writer
+	if catFormat == "csv" {
+		csvW = csv.NewWriter(os.Stdout)
+		defer csvW.Flush()
+	}
+
+	jsonFirst := true
+	if catFormat == "json" {
+		fmt.Print("[")
+	}
+
+	csvHeaderWritten := false
 	for _, rdr := range rdrs {
-		if count == 0 {
-			count = rdr.MetaData().NumRows + 1
+		// Per-file row limit: user-supplied count, or all rows in this file.
+		fileCount := count
+		if fileCount == 0 {
+			fileCount = rdr.MetaData().NumRows + 1
 		}
+
+		sc := rdr.MetaData().Schema
+		activeIdx, activeFields := resolveColumns(sc.NumColumns(), func(c int) string {
+			return sc.Column(c).Path()
+		}, colFilter)
+
+		// Write CSV header once across all files (assumes consistent schema).
+		if catFormat == "csv" && !csvHeaderWritten {
+			if err := csvW.Write(activeFields); err != nil {
+				log.Error(err).Msg("error writing CSV header")
+				return
+			}
+			csvHeaderWritten = true
+		}
+
 		var printNum int64
+	rowGroupLoop:
 		for r := 0; r < rdr.NumRowGroups(); r++ {
 			rgr := rdr.RowGroup(r)
-			scanners := make([]*dumper.Dumper, rdr.MetaData().Schema.NumColumns())
-			fields := make([]string, rdr.MetaData().Schema.NumColumns())
-			for c := range rdr.MetaData().Schema.NumColumns() {
-				col, err := rgr.Column(c)
+			scanners := make([]*dumper.Dumper, len(activeIdx))
+			for i, colIdx := range activeIdx {
+				col, err := rgr.Column(colIdx)
 				if err != nil {
-					log.Error(err).Int("column", c).Msg("error getting column")
+					log.Error(err).Int("column", colIdx).Msg("error getting column")
 					return
 				}
-				scanners[c] = dumper.NewDumper(col, convertInt96AsTime)
-				fields[c] = col.Descriptor().Path()
+				scanners[i] = dumper.NewDumper(col, convertInt96AsTime)
 			}
-			var line string
-			for {
-				// printNum is used to limit the number of rows
-				if printNum >= count {
-					return
-				}
-				if line == "" {
-					line = "{"
-				} else {
-					line = "\n{"
-				}
 
-				data := false
-				first := true
-				for idx, s := range scanners {
-					if val, ok := s.Next(); ok {
-						if !data {
-							fmt.Print(line)
-						}
-						data = true
-						if val == nil {
-							continue
-						}
-						if !first {
-							fmt.Print(",")
-						}
-						first = false
-						switch val.(type) {
-						case bool, int32, int64, float32, float64:
-						default:
-							val = s.FormatValue(val, 0)
-						}
-						jsonVal, err := json.Marshal(val)
-						if err != nil {
-							log.Error(err).
-								Str("val", fmt.Sprintf("%+v", val)).
-								Msg("error marshalling json")
-							return
-						}
-						fmt.Printf("%q: %s", fields[idx], jsonVal)
-					}
+			for {
+				if printNum >= fileCount {
+					break rowGroupLoop
 				}
-				if !data {
+				vals, hasData := collectRow(scanners)
+				if !hasData {
 					break
 				}
-				fmt.Print("}")
+				if err := printRow(catFormat, csvW, activeFields, vals, scanners, &jsonFirst); err != nil {
+					log.Error(err).Msg("error writing row")
+					return
+				}
 				printNum++
 			}
-			fmt.Println()
 		}
+	}
+
+	if catFormat == "json" {
+		if !jsonFirst {
+			fmt.Print("\n")
+		}
+		fmt.Println("]")
 	}
 }
