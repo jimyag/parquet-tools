@@ -7,12 +7,15 @@ Supported reading from: http/https URL, local file, s3/s3a URL
 
 ## Features
 
-- cat: Print the first N records from a file
-- footer: Print the Parquet file footer in json format
-- meta: Pretty Print a Parquet file's metadata
-- schema: Pretty print the Avro schema for a file
-- struct: Print the Go struct for a file
-- diff: Diff two Parquet files schema
+- **cat**: Print the first N records from a file (`--format jsonl/csv/json`, `--columns`)
+- **tail**: Print the last N records from a file (`--format jsonl/csv/json`, `--columns`)
+- **rowcount**: Print the number of rows in a file
+- **validate**: Validate a file's footer and optionally all data (`--full`)
+- **meta**: Pretty print a Parquet file's metadata
+- **schema**: Pretty print the Avro schema for a file
+- **struct**: Print the Go struct for a file
+- **footer**: Print the Parquet file footer in JSON format
+- **diff**: Diff two Parquet files' schemas
 
 ## Install
 
@@ -228,6 +231,70 @@ diff two Parquet files schema
 
 ```bash
 parquet-tools diff v0.7.1.parquet v0.7.2.parquet
+```
+
+print row count
+
+```bash
+parquet-tools rowcount v0.7.1.parquet
+10
+
+# multiple files: filename<tab>count
+parquet-tools rowcount v0.7.1.parquet v0.7.2.parquet
+v0.7.1.parquet  10
+v0.7.2.parquet  10
+```
+
+validate a file (shallow — footer only)
+
+```bash
+parquet-tools validate v0.7.1.parquet
+OK  v0.7.1.parquet
+```
+
+validate with full data read
+
+```bash
+parquet-tools validate --full --verbose v0.7.1.parquet
+OK  v0.7.1.parquet — 10 rows, 1 row groups, 11 columns (all data read)
+```
+
+print first 3 records as JSON Lines (default)
+
+```bash
+parquet-tools cat -n 3 v0.7.1.parquet
+{"carat":0.23,"cut":"Ideal","color":"E","clarity":"SI2",...}
+```
+
+print as CSV
+
+```bash
+parquet-tools cat -n 3 --format csv v0.7.1.parquet
+carat,cut,color,...
+0.23,Ideal,E,...
+```
+
+print as a JSON array
+
+```bash
+parquet-tools cat -n 3 --format json v0.7.1.parquet
+[
+{"carat":0.23,...},
+...
+]
+```
+
+filter specific columns
+
+```bash
+parquet-tools cat -n 3 --columns carat,cut v0.7.1.parquet
+{"carat":0.23,"cut":"Ideal"}
+```
+
+print the last 5 records
+
+```bash
+parquet-tools tail -n 5 v0.7.1.parquet
 ```
 
 read from local file
