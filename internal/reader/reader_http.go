@@ -13,7 +13,6 @@ var _ parquet.ReaderAtSeeker = (*HttpReader)(nil)
 type HttpReader struct {
 	url      string
 	fileSize int64
-	data     []byte
 	offset   int64
 }
 
@@ -22,6 +21,7 @@ func NewHttpReader(url string) (*HttpReader, error) {
 	if err != nil {
 		return nil, err
 	}
+	resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("server returned non-OK status: %v", resp.Status)
 	}
@@ -37,23 +37,35 @@ func NewHttpReader(url string) (*HttpReader, error) {
 	}, nil
 }
 
+// ReadAt fetches only the requested byte range via HTTP Range requests,
+// avoiding loading the entire file into memory.
 func (fd *HttpReader) ReadAt(p []byte, off int64) (n int, err error) {
 	if off >= fd.fileSize {
 		return 0, io.EOF
 	}
-	if len(fd.data) == 0 {
-		if err := fd.download(); err != nil {
-			return 0, err
-		}
+
+	end := off + int64(len(p)) - 1
+	if end >= fd.fileSize {
+		end = fd.fileSize - 1
 	}
 
-	end := off + int64(len(p))
-	if end > fd.fileSize {
-		end = fd.fileSize
+	req, err := http.NewRequest(http.MethodGet, fd.url, nil)
+	if err != nil {
+		return 0, err
+	}
+	req.Header.Set("Range", fmt.Sprintf("bytes=%d-%d", off, end))
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return 0, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusPartialContent && resp.StatusCode != http.StatusOK {
+		return 0, fmt.Errorf("server returned non-OK status: %v", resp.Status)
 	}
 
-	copy(p, fd.data[off:end])
-	return int(end - off), nil
+	return io.ReadFull(resp.Body, p[:end-off+1])
 }
 
 func (fd *HttpReader) Seek(offset int64, whence int) (int64, error) {
@@ -75,24 +87,4 @@ func (fd *HttpReader) Seek(offset int64, whence int) (int64, error) {
 	}
 
 	return fd.offset, nil
-}
-
-func (fd *HttpReader) download() error {
-	resp, err := http.Get(fd.url)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("server returned non-OK status: %v", resp.Status)
-	}
-
-	data, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return err
-	}
-
-	fd.data = data
-	return nil
 }

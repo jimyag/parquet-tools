@@ -35,8 +35,6 @@ func meta(cmd *cobra.Command, args []string) {
 		t := table.NewWriter()
 		t.Style().Options.DrawBorder = true
 		t.Style().Options.SeparateRows = true
-		tTemp := table.Table{}
-		tTemp.Render()
 		t.SetColumnConfigs([]table.ColumnConfig{
 			{Name: "key", WidthMax: 0, Align: text.AlignCenter},
 			{Name: "value", WidthMax: 40, Align: text.AlignCenter},
@@ -48,19 +46,17 @@ func meta(cmd *cobra.Command, args []string) {
 		t.AppendRow(table.Row{"created by", fileMetadata.GetCreatedBy()})
 		t.AppendRow(table.Row{"num rows", rdr.NumRows()})
 		kvMeta := fileMetadata.KeyValueMetadata()
-		if kvMeta != nil {
-			if kvMeta.Len() > 0 {
-				t.AppendRow(table.Row{"key value file metadata", kvMeta.Len()})
-			}
+		if kvMeta != nil && kvMeta.Len() > 0 {
+			t.AppendRow(table.Row{"key value file metadata", kvMeta.Len()})
 			keys := kvMeta.Keys()
 			values := kvMeta.Values()
 			for i := 0; i < kvMeta.Len(); i++ {
 				t.AppendRow(table.Row{keys[i], values[i]})
 			}
-			t.AppendRow(table.Row{"number of row groups", rdr.NumRowGroups()})
-			t.AppendRow(table.Row{"number of real columns", fileMetadata.Schema.Root().NumFields()})
-			t.AppendRow(table.Row{"number of columns", fileMetadata.Schema.NumColumns()})
 		}
+		t.AppendRow(table.Row{"number of row groups", rdr.NumRowGroups()})
+		t.AppendRow(table.Row{"number of real columns", fileMetadata.Schema.Root().NumFields()})
+		t.AppendRow(table.Row{"number of columns", fileMetadata.Schema.NumColumns()})
 		fmt.Println(t.Render())
 		fmt.Println()
 		for r := 0; r < rdr.NumRowGroups(); r++ {
@@ -68,8 +64,6 @@ func meta(cmd *cobra.Command, args []string) {
 			t := table.NewWriter()
 			t.Style().Options.DrawBorder = true
 			t.Style().Options.SeparateRows = true
-			tTemp := table.Table{}
-			tTemp.Render()
 
 			rgr := rdr.RowGroup(r)
 			rowGroupMeta := rgr.MetaData()
@@ -80,8 +74,6 @@ func meta(cmd *cobra.Command, args []string) {
 			newT := table.NewWriter()
 			newT.Style().Options.DrawBorder = true
 			newT.Style().Options.SeparateRows = true
-			newtTemp := table.Table{}
-			newtTemp.Render()
 			newT.SetColumnConfigs([]table.ColumnConfig{
 				{Name: "column", WidthMax: 10, Align: text.AlignCenter},
 				{Name: "counts", WidthMax: 5, Align: text.AlignCenter},

@@ -53,6 +53,12 @@ func diffRun(cmd *cobra.Command, args []string) {
 			log.Error(err).Msg("error writing to temp file")
 			return
 		}
+		// Close before passing to diff so all buffered writes are flushed.
+		if err = tmp1.Close(); err != nil {
+			log.Error(err).Msg("error closing temp file")
+			return
+		}
+
 		tmp2, err := os.CreateTemp("", "parquet-diff-2.txt")
 		if err != nil {
 			log.Error(err).Msg("error creating temp file")
@@ -63,10 +69,16 @@ func diffRun(cmd *cobra.Command, args []string) {
 			log.Error(err).Msg("error writing to temp file")
 			return
 		}
-		cmd := exec.Command("diff", "-u", tmp1.Name(), tmp2.Name())
-		cmd.Stdout = os.Stdout
-		cmd.Stderr = os.Stderr
-		cmd.Run()
+		if err = tmp2.Close(); err != nil {
+			log.Error(err).Msg("error closing temp file")
+			return
+		}
+
+		diffCmd := exec.Command("diff", "-u", tmp1.Name(), tmp2.Name())
+		diffCmd.Stdout = os.Stdout
+		diffCmd.Stderr = os.Stderr
+		// diff exits with 1 when differences are found; that is expected, not an error.
+		diffCmd.Run() //nolint:errcheck
 		return
 	}
 	dmp := diffmatchpatch.New()

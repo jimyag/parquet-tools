@@ -153,17 +153,19 @@ func getReaders(filenames []string) ([]*file.Reader, error) {
 						c.Scopes = []string{}
 					}
 					if slices.Contains(c.Scopes, bucket) {
-						continue
+						// bucket already cached in scopes, nothing to update
+						break
 					}
 					c.Scopes = append(c.Scopes, bucket)
 					cfg.S3[ic] = c
-					// update config file
-					f, err := os.OpenFile(s3ConfigFile, os.O_WRONLY, 0o600)
+					// update config file, truncate to avoid stale bytes when new content is shorter
+					f, err := os.OpenFile(s3ConfigFile, os.O_WRONLY|os.O_TRUNC, 0o600)
 					if err != nil {
 						log.Error().Msgf("error opening s3 config file: %s", err)
 						return nil, err
 					}
 					if err := toml.NewEncoder(f).Encode(cfg); err != nil {
+						f.Close()
 						log.Error().Msgf("error encoding s3 config file: %s", err)
 						return nil, err
 					}
