@@ -42,6 +42,8 @@ github.com/jedib0t/go-pretty/v6 v6.5.8 h1:8BCzJdSvUbaDuRba4YVh+SKMGcAAKdkcF3SVFb
 github.com/jedib0t/go-pretty/v6 v6.5.8/go.mod h1:zbn98qrYlh95FIhwwsbIip0LYpwSG8SUOScs+v9/t0E=
 github.com/jimmicro/version v1.0.0 h1:xSmSTIXP++HBaaSiI80a9choe/baJFWIgQVY03MzHJ4=
 github.com/jimmicro/version v1.0.0/go.mod h1:/t8xgCGvTfdpjvNgcZGlhZW4weqTcb5DFinrGWZ/9d8=
+github.com/jimmicro/version v1.1.0 h1:s2oSEuUPvI9O+FZxlY2LjXRse6fvyJoFj0TZehwHAqs=
+github.com/jimmicro/version v1.1.0/go.mod h1:/t8xgCGvTfdpjvNgcZGlhZW4weqTcb5DFinrGWZ/9d8=
 github.com/jimyag/log v0.1.1 h1:b3CTE/xGBWAioiqKXICZM8jdsbcrVjOvmR6MyATlTtk=
 github.com/jimyag/log v0.1.1/go.mod h1:F12+oHI11ydaa4j0/aYfMPQe6z/igZJraWu9ILCOHUY=
 github.com/jmespath/go-jmespath v0.4.0 h1:BEgLn5cpjn8UN1mAw4NjwDrS35OdebyEtFe+9YPoQUg=
