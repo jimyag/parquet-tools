@@ -18,7 +18,7 @@ require (
 require (
 	github.com/JohnCGriffin/overflow v0.0.0-20211019200055-46fa312c352c // indirect
 	github.com/andybalholm/brotli v1.2.6 // indirect
-	github.com/apache/thrift v0.20.0 // indirect
+	github.com/apache/thrift v0.25.0 // indirect
 	github.com/goccy/go-json v0.11.2 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/google/flatbuffers v24.3.25+incompatible // indirect
