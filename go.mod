@@ -7,7 +7,7 @@ toolchain go1.27.3
 require (
 	github.com/BurntSushi/toml v1.3.2
 	github.com/apache/arrow/go/v17 v17.0.0
-	github.com/aws/aws-sdk-go v1.51.22
+	github.com/aws/aws-sdk-go v1.55.8
 	github.com/jedib0t/go-pretty/v6 v6.5.8
 	github.com/jimmicro/version v1.0.0
 	github.com/jimyag/log v0.1.1
