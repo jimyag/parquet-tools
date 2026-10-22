@@ -12,7 +12,7 @@ require (
 	github.com/jimmicro/version v1.0.0
 	github.com/jimyag/log v0.1.1
 	github.com/sergi/go-diff v1.3.2-0.20230802210424-5b0b94c5c0d3
-	github.com/spf13/cobra v1.8.0
+	github.com/spf13/cobra v1.10.2
 )
 
 require (
