@@ -11,7 +11,7 @@ require (
 	github.com/jedib0t/go-pretty/v6 v6.5.8
 	github.com/jimmicro/version v1.0.0
 	github.com/jimyag/log v0.1.1
-	github.com/sergi/go-diff v1.3.2-0.20230802210424-5b0b94c5c0d3
+	github.com/sergi/go-diff v1.4.0
 	github.com/spf13/cobra v1.8.0
 )
 
